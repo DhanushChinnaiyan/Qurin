@@ -38,7 +38,7 @@ router.post("/signup", async (req, res) => {
     const token = generateJwtToken(user_for_token);
 
     // return response
-    return res.status(200).json({ message: "Successfully registered", token });
+    return res.status(200).json({ message: "Successfully registered", token, userType:newUser.userType });
   
 } catch (error) {
     console.log("Signup error", error);
@@ -80,7 +80,7 @@ router.post("/login", async (req, res) => {
     const token = generateJwtToken(user_for_token);
 
     // Return response with token
-    return res.status(200).json({ message: 'Successfully logged in', token });
+    return res.status(200).json({ message: 'Successfully logged in', token, userType:user.userType });
   
 } catch (error) {
     console.log("Login error", error);
