@@ -57,11 +57,12 @@ router.post("/products", userAuth, async (req, res) => {
         price,
         category: rawCategory,
         subcategory: rawSubcategory,
-        location,
+        location:rawLocation,
       } = req.body;
 
       const category = rawCategory.toLowerCase();
       const subcategory = rawSubcategory.toLowerCase();
+      const location = rawLocation.toLowerCase()
 
       // Check and create category and subcategory if they don't exist
       const [categoryObj, subcategoryObj] = await Promise.all([
