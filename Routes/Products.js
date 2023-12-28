@@ -16,7 +16,8 @@ router.get("/products", async (req, res) => {
     const products = await Product.find(query)
       .populate("category", "_id name")
       .populate("subcategory", "_id name")
-      .populate("merchant", "_id name");
+      .populate("merchant", "_id name")
+      .exec();
 
     if (!products.length) {
       return res.status(404).json({ message: "No products found" });
@@ -178,44 +179,68 @@ router.delete("/products/:productId", userAuth, async (req, res) => {
       : res.status(404).json({ message: "Product not found or unauthorized" });
   } catch (error) {
     console.error("Error deleting product:", error);
-    res.status(500).json({ message: "Failed to delete product" });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-
 // Route for filtering products
-router.get('/products/filter', async (req, res) => {
+router.get("/products/filter", async (req, res) => {
   try {
     const { category, subcategory, priceMin, priceMax, location } = req.query;
 
     const filters = {};
 
     if (category) {
-      filters.category = category;
+      const foundCategory = await Category.findOne({ name: category });
+      if (foundCategory) {
+        filters.category = foundCategory._id;
+      } else {
+        return res
+          .status(404)
+          .json({ message: "No products match the criteria" });
+      }
     }
 
     if (subcategory) {
-      filters.subcategory = subcategory;
+      const foundSubcategory = await Subcategory.findOne({ name: subcategory });
+      if (foundSubcategory) {
+        filters.subcategory = foundSubcategory._id;
+      } else {
+        return res
+          .status(404)
+          .json({ message: "No products match the criteria" });
+      }
     }
 
     if (priceMin && priceMax) {
-      filters.price = { $gte: priceMin, $lte: priceMax };
+      filters.price = { $gte: parseInt(priceMin), $lte: parseInt(priceMax) };
     } else if (priceMin) {
-      filters.price = { $gte: priceMin };
+      filters.price = { $gte: parseInt(priceMin) };
     } else if (priceMax) {
-      filters.price = { $lte: priceMax };
+      filters.price = { $lte: parseInt(priceMax) };
     }
 
     if (location) {
       filters.location = location;
     }
 
-    const products = await Product.find(filters).populate('category').populate('subcategory');
-    res.json(products);
+    const products = await Product.find(filters)
+      .populate("category", "_id name")
+      .populate("subcategory", "_id name")
+      .populate("merchant", "_id name")
+      .exec();
+
+    if (products.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products match the criteria" });
+    }
+
+    return res.status(200).json(products);
   } catch (err) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 module.exports = router;
