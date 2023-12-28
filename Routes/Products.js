@@ -197,25 +197,12 @@ router.get("/products/filter", async (req, res) => {
     const filters = {};
 
     if (category) {
-      const foundCategory = await Category.findOne({ name: category });
-      if (foundCategory) {
-        filters.category = foundCategory._id;
-      } else {
-        return res
-          .status(404)
-          .json({ message: "No products match the criteria" });
+        filters.category = category;
       }
-    }
+    
 
     if (subcategory) {
-      const foundSubcategory = await Subcategory.findOne({ name: subcategory });
-      if (foundSubcategory) {
-        filters.subcategory = foundSubcategory._id;
-      } else {
-        return res
-          .status(404)
-          .json({ message: "No products match the criteria" });
-      }
+        filters.subcategory = subcategory   
     }
 
     if (priceMin && priceMax) {
