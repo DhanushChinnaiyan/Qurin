@@ -4,8 +4,7 @@ const Product = require("../Model/Product");
 const userAuth = require("../Controllers/Autherization");
 const Category = require("../Model/Category");
 const Subcategory = require("../Model/SubCategory");
-const { default: mongoose } = require("mongoose");
-const { User } = require("../Model/User");
+const { mongoose } = require("mongoose");
 
 // Get all products (accessible to anyone)
 router.get("/products", async (req, res) => {
@@ -19,10 +18,17 @@ router.get("/products", async (req, res) => {
       .populate("merchant", "_id name")
       .exec();
 
-    if (!products.length) {
-      return res.status(404).json({ message: "No products found" });
-    }
+    if (!productId) {
+      const categoriesPromise = Category.find({}, "_id name").exec();
+      const subcategoriesPromise = Subcategory.find({}, "_id name").exec();
 
+      const [categories, subcategories] = await Promise.all([
+        categoriesPromise,
+        subcategoriesPromise,
+      ]);
+
+      return res.status(200).json({products, categories, subcategories});
+    }
     return res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
