@@ -214,7 +214,7 @@ router.get("/products/filter", async (req, res) => {
     }
 
     if (location) {
-      filters.location = location;
+      filters.location = location.toLowerCase();
     }
 
     const products = await Product.find(filters)
